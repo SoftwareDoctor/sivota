@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # app:
+  #   container_name: spring-boot-app
+  #   image: sivota
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sivota
+  #     SPRING_DATASOURCE_USERNAME: user
+  #     SPRING_DATASOURCE_PASSWORD: root13
+  #   networks:
+  #     - db-network
+  #   restart: unless-stopped
+
+  db:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: root13
+      PGDATA: /data/postgres
+      POSTGRES_DB: SiVota
+    volumes:
+      - db:/var/lib/postgresql/data  # Mount volume per persistenza dati
+    ports:
+      - "5432:5432"
+    networks:
+      - db-network
+#    command: ["postgres", "-c", "listen_addresses=*", "-c", "log_statement=all", "-c", "log_connections=on", "-c", "log_disconnections=on", "-c", "logging_collector=on"]
+    restart: unless-stopped
+
+networks:
+  db-network:
+    driver: bridge
+
+volumes:
+  db:

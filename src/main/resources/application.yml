@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/SiVota
+    username: user
+    password: root13
+    driver-class-name: org.postgresql.Driver
+  profiles:
+    active: main
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate.format_sql: true
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate.globally_quoted_identifiers: true #Questa proprietà dice a Hibernate di racchiudere tutti gli identificatori (come nomi di tabelle e colonne) tra virgolette doppie. Questo è particolarmente utile quando si utilizzano parole riservate come nomi di tabelle o colonne in PostgreSQL.
+  mail:
+    host: smtp.mail.yahoo.com
+    port: 587
+    username: andrea_italiano87@yahoo.com
+    password: zzvrvjsijqljpcgv
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+#  autoconfigure:
+#    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  api:
+    docs:
+      path: /api-docs
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.web: TRACE
+    org.springframework.security.access.AccessDeniedException: INFO
+    org.springframework.security.authentication.InsufficientAuthenticationException: INFO
+

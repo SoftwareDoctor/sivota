@@ -1,0 +1,10 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/generated/java/it/softwaredoctor/sivota/api/ApiUtil.java
+src/generated/java/it/softwaredoctor/sivota/api/UsersApi.java
+src/generated/java/it/softwaredoctor/sivota/api/VotazioneApi.java
+src/generated/java/it/softwaredoctor/sivota/dto/DomandaDTO.java
+src/generated/java/it/softwaredoctor/sivota/dto/RispostaDTO.java
+src/generated/java/it/softwaredoctor/sivota/dto/UserDTO.java
+src/generated/java/it/softwaredoctor/sivota/dto/VotazioneDTO.java

@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: Sistema di Votazione - OpenAPI 3.0
+  description: API per gestire il sistema di votazione
+  version: 0.0.1
+tags:
+  - name: votazione
+  - name: users
+paths:
+  /users:
+    post:
+      tags:
+        - users
+      summary: Creare un nuovo utente
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Utente creato con successo
+        '400':
+          description: Richiesta non valida
+
+  /votazione:
+    post:
+      tags:
+        - votazione
+      summary: Creare una nuova votazione
+      operationId: createVotazione
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Votazione'
+      responses:
+        '200':
+          description: Votazione creata con successo
+        '400':
+          description: Richiesta non valida
+
+  /votazione/user/{uuidUser}:
+    get:
+      tags:
+        - votazione
+      summary: Recuperare tutte le votazioni di un utente
+      operationId: getVotazioniByUuidUser
+      parameters:
+        - name: uuidUser
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+      responses:
+        '200':
+          description: Elenco votazioni trovato
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Votazione'
+        '400':
+          description: Richiesta non valida
+
+  /votazione/{uuidVotazione}:
+    get:
+      tags:
+        - votazione
+      summary: Visualizzare una votazione con i risultati (solo per il creatore)
+      operationId: getVotazioneByUuid
+      security:
+        - basicAuth: []
+      parameters:
+        - name: uuidVotazione
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+      responses:
+        '200':
+          description: Dettagli votazione trovati
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Votazione'
+        '403':
+          description: Accesso negato
+        '400':
+          description: Richiesta non valida
+
+    delete:
+      tags:
+        - votazione
+      summary: Eliminare una votazione
+      operationId: deleteVotazione
+      parameters:
+        - name: uuidVotazione
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+      responses:
+        '204':
+          description: Votazione eliminata con successo
+        '400':
+          description: Richiesta non valida
+
+  /votazione/votante/{uuidVotazione}:
+    post:
+      tags:
+        - votazione
+      summary: Rispondere a una votazione tramite invito
+      operationId: respondToVotazione
+      parameters:
+        - name: uuidVotazione
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Risposta'
+      responses:
+        '200':
+          description: Risposta creata con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Risposta'
+        '400':
+          description: Richiesta non valida
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    User:
+      type: object
+      properties:
+        uuidUser:
+          type: string
+          format: uuid
+          example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+        username:
+          type: string
+          example: 'andrea87'
+        password:
+          type: string
+          example: 'andrea87'
+        email:
+          type: string
+          example: 'andrea87@yahoo.it'
+        name:
+          type: string
+          example: 'andrea'
+        surname:
+          type: string
+          example: 'italiano'
+        votazione:
+          type: array
+          items:
+            $ref: '#/components/schemas/Votazione'
+        registrato:
+          type: boolean
+          example: false
+
+    Votazione:
+      type: object
+      properties:
+        uuidVotazione:
+          type: string
+          format: uuid
+          example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+        titolo:
+          type: string
+          example: 'consiglio_direttivo'
+        user:
+          $ref: '#/components/schemas/User'
+        domande:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domanda'
+        votantiEmail:
+          type: array
+          items:
+            type: string
+            format: email
+            example: 'andrea87@gmail.com'
+        dataCreazione:
+          type: string
+        isAnonymous:
+          type: boolean
+          example: false
+
+    Domanda:
+      type: object
+      properties:
+        uuidDomanda:
+          type: string
+          format: uuid
+          example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+        testo:
+          type: string
+          example: 'Qual è la tua opinione?'
+        risposte:
+          type: array
+          items:
+            $ref: '#/components/schemas/Risposta'
+        votazione:
+          $ref: '#/components/schemas/Votazione'
+        totaleRisposte:
+          type: integer
+          format: int64
+          example: 0
+      required:
+        - uuidDomanda
+        - testo
+        - risposte
+        - votazione
+      additionalProperties: false
+
+    Risposta:
+      type: object
+      properties:
+        uuidRisposta:
+          type: string
+          format: uuid
+          example: '6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac'
+        testo:
+          type: string
+          example: 'ok'
+        domanda:
+          $ref: '#/components/schemas/Domanda'
+        dataRisposta:
+          type: string
+        isSelected:
+          type: boolean
+          example: false
+        risultatoNumerico:
+          type: integer
+          example: 0
+        votantiEmail:
+          type: array
+          items:
+            type: string
+            format: email
+            example: 'andrea87@gmail.com'
+      required:
+        - uuidRisposta
+        - testo
+        - domanda
+      additionalProperties: false
+
+
