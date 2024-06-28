@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # OpenAPI generated API stub
 
@@ -25,3 +26,6 @@ public interface PetClient extends PetApi {
 
 }
 ```
+=======
+# sivota
+>>>>>>> adeb002b434c6820244b1e6698a1ad7e669c7284
