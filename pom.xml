@@ -5,7 +5,7 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.0</version>
         <relativePath/>
-        <!--   lookup parent from repository   -->
+        <!--    lookup parent from repository    -->
     </parent>
     <groupId>it.softwaredoctor</groupId>
     <artifactId>sivota</artifactId>
@@ -17,9 +17,11 @@
         <java.version>17</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.32</lombok.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
+        <!--  https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
@@ -35,6 +37,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -63,34 +66,33 @@
             <artifactId>lombok-mapstruct-binding</artifactId>
             <version>0.2.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>1.18.20</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>1.18.32</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok-mapstruct-binding</artifactId>-->
-<!--            <version>0.2.0</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>${lombok.version}</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-        <!--          <dependency>  -->
-        <!--              <groupId>org.springframework.boot</groupId>  -->
-        <!--              <artifactId>spring-boot-starter-test</artifactId>  -->
-        <!--              <scope>test</scope>  -->
-        <!--          </dependency>  -->
+        <!--         <dependency> -->
+        <!--             <groupId>org.projectlombok</groupId> -->
+        <!--             <artifactId>lombok</artifactId> -->
+        <!--             <version>1.18.20</version> -->
+        <!--         </dependency> -->
+        <!--         <dependency> -->
+        <!--             <groupId>org.projectlombok</groupId> -->
+        <!--             <artifactId>lombok</artifactId> -->
+        <!--             <version>1.18.32</version> -->
+        <!--             <scope>provided</scope> -->
+        <!--         </dependency> -->
+        <!--         <dependency> -->
+        <!--             <groupId>org.projectlombok</groupId> -->
+        <!--             <artifactId>lombok-mapstruct-binding</artifactId> -->
+        <!--             <version>0.2.0</version> -->
+        <!--         </dependency> -->
+        <!--         <dependency> -->
+        <!--             <groupId>org.projectlombok</groupId> -->
+        <!--             <artifactId>lombok</artifactId> -->
+        <!--             <version>${lombok.version}</version> -->
+        <!--             <optional>true</optional> -->
+        <!--         </dependency> -->
+        <!--           <dependency>   -->
+        <!--               <groupId>org.springframework.boot</groupId>   -->
+        <!--               <artifactId>spring-boot-starter-test</artifactId>   -->
+        <!--               <scope>test</scope>   -->
+        <!--           </dependency>   -->
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
@@ -101,12 +103,12 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.7.0</version>
         </dependency>
-<!--                  <dependency>-->
-<!--                      <groupId>javax.servlet</groupId>-->
-<!--                      <artifactId>javax.servlet-api</artifactId>-->
-<!--                      <version>4.0.1</version>-->
-<!--                      <scope>provided</scope>-->
-<!--                  </dependency>-->
+        <!--                   <dependency> -->
+        <!--                       <groupId>javax.servlet</groupId> -->
+        <!--                       <artifactId>javax.servlet-api</artifactId> -->
+        <!--                       <version>4.0.1</version> -->
+        <!--                       <scope>provided</scope> -->
+        <!--                   </dependency> -->
     </dependencies>
     <build>
         <plugins>
@@ -165,8 +167,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

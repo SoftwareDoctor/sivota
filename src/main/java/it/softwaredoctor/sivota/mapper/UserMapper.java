@@ -19,7 +19,7 @@ public interface UserMapper {
             @Mapping(target = "name", source = "name"),
             @Mapping(target = "surname", source = "surname"),
             @Mapping(target = "votazione", source = "votazione"),
-            @Mapping(target = "roleName", source = "roleName"),
+            @Mapping(target = "roleName", ignore = true),
             @Mapping(target = "registrato", ignore = true),
             @Mapping(target = "enabled", ignore = true),
             @Mapping(target = "verificationToken", ignore = true),
