@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 //import org.springframework.security.access.prepost.PreAuthorize;
 //import org.springframework.security.core.context.SecurityContextHolder;
 //import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class VotazioneService {
     private final UserService userService;
     private final RispostaService rispostaService;
     private final EmailService emailService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     //    @PreAuthorize("isAuthenticated()")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -101,11 +103,26 @@ public class VotazioneService {
 //        return votazione.getUuidVotazione();
 //    }
 
+    public UserDetails getCurrentUser() {
+        return customUserDetailsService.loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
+    public User getUserFromUserDetails(UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User non trovato con username: " + username);
+        }
+        return user;
+    }
+
 
     //Il metodo createVotazione esegue i seguenti step:
     //1. Crea la votazione 2. Crea le domande 3. Crea le risposte 4. Salva tutto 5. Invio email alle email votantiEmail
+    @Transactional
     public UUID createVotazione(VotazioneDTO votazioneDTO, UserDetails currentUser) {
-        User user = (User) currentUser;
+        UserDetails userDetails = getCurrentUser();
+        User user = getUserFromUserDetails(userDetails);
 
         Votazione votazione = votazioneMapper.votazioneDTOToVotazione(votazioneDTO);
         votazione.setUser(user);
@@ -113,32 +130,20 @@ public class VotazioneService {
         List<Domanda> domande = new ArrayList<>();
         for (DomandaDTO domandaDTO : votazioneDTO.getDomande()) {
             Domanda domanda = domandaService.createDomanda(domandaDTO);
-
-            List<Risposta> risposte = new ArrayList<>();
-            for (RispostaDTO rispostaDTO : domandaDTO.getRisposte()) {
-                Risposta risposta = rispostaService.createRisposta(rispostaDTO);
-                risposta.setDomanda(domanda);
-                risposte.add(risposta);
-                // Salvare l'indirizzo email in oggetto risposta solo se la votazione non è anonima e se l utente ha selezionato quella risposta
-//                if (!Boolean.TRUE.equals(votazione.getIsAnonymous()) && risposta.getIsSelected()) {
-//                        List<String> votantiEmail = risposta.getVotantiEmail();
-//                        if (votantiEmail == null) {
-//                            votantiEmail = new ArrayList<>();
-//                        }
-//                        risposta.setVotantiEmail(votantiEmail);
-//                    }
-                }
             domanda.setVotazione(votazione);
-            domanda.setRisposte(risposte);
             domande.add(domanda);
         }
-        votazione.setDomande(domande);
+        votazione.setDomande(domande); // Associare le domande alla votazione
+
+        // Salvare la votazione (questo salva anche le domande e le risposte grazie alle relazioni impostate)
         votazioneRepository.save(votazione);
 
         // Creata la votazione inviare l'email
         emailService.sendEmail(votazioneDTO.getVotantiEmail(), votazione.getUuidVotazione());
         return votazione.getUuidVotazione();
     }
+
+
 
 
     // Metodo per l'aggiornamento della votazione da parte dell'utente creatore
@@ -154,33 +159,11 @@ public class VotazioneService {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //    // Metodo per ottenere l'indirizzo email del compilatore
 //    private String getEmailCompilazione(VotazioneDTO votazioneDTO) {
 //
 //        return votazioneDTO.getEmailCompilazione();
 //    }
-
-
-
-
 
 
 //    public Votazione getVotazione(UUID uuidVotazione) {
@@ -209,7 +192,7 @@ public class VotazioneService {
                 risposta.setRisultatoNumerico(risultatoNumericoTotale);
 //                rispostaRepository.save(risposta);
 
-                if(votazione.getIsAnonymous() == false) {
+                if (votazione.getIsAnonymous() == false) {
                     List<String> votantiEmail = risposta.getVotantiEmail();
                     if (risposta.getVotantiEmail().contains(votanteEmail)) {
                         votantiEmail.add(votanteEmail);

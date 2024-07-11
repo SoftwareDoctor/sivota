@@ -48,6 +48,7 @@ public class UserController {
         boolean loggedIn = userService.login(loginUser);
 
         if (loggedIn) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             log.info("User {} logged in successfully.", loginUser.getUsername());
             return ResponseEntity.ok().build();
         } else {
@@ -122,7 +123,7 @@ public class UserController {
     @DeleteMapping("/all")
     public ResponseEntity<Void> deleteAllVotazioniByUser() {
         UserDetails userDetails = getCurrentUser();
-        User currentUser = (User) userDetails;
+        User currentUser = convertToCustomUser(userDetails);
         UUID uuidUser = currentUser.getUuidUser();
         userService.deleteAllVotazioniByUser(uuidUser);
         return ResponseEntity.noContent().build();
@@ -146,8 +147,8 @@ public class UserController {
     @GetMapping("/all/")
     public ResponseEntity<List<VotazioneDTO>> findAllByUuidUser() {
         UserDetails userDetails = getCurrentUser();
-        User currentUser = (User) userDetails;
-        UUID uuidUser = currentUser.getUuidUser();
+        User user = userService.getUserFromUserDetails(userDetails);
+        UUID uuidUser = user.getUuidUser();
         List<VotazioneDTO> votazioniDTO = userService.findAllByUuidUser(uuidUser);
         return ResponseEntity.ok().body(votazioniDTO);
     }
@@ -181,5 +182,14 @@ public class UserController {
         }
         throw new RuntimeException("User not authenticated");
     }
+
+    private User convertToCustomUser(UserDetails userDetails) {
+
+        String username = userDetails.getUsername();
+
+        return userService.findByUsername(username);
+    }
+
+
 }
 

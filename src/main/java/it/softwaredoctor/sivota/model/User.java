@@ -81,6 +81,8 @@ public class User implements UserDetails {
         this.accesso = false;
     }
 
+
+
 //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return Collections.singleton(new SimpleGrantedAuthority("ROLE_admin"));
@@ -116,7 +118,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.enabled;
     }
 
     @Override
@@ -131,6 +133,14 @@ public class User implements UserDetails {
         }
         return authorities;
 //        return null;
+    }
+
+
+    public User(@NotEmpty String username, @NotEmpty @NotNull String password, @NotEmpty String roleName) {
+        super();
+        this.username = username;
+        this.password = password;
+        this.roleName = roleName;
     }
 //
 //    @Override

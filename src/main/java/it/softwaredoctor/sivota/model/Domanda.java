@@ -26,11 +26,12 @@ public class Domanda {
 
     private String testo;
 
+//    @JsonIgnore
     @OneToMany(mappedBy = "domanda", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Risposta> risposte;
 
-    @JsonIgnore
+//    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "votazione_id")
     private Votazione votazione;

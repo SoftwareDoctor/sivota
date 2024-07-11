@@ -1,6 +1,7 @@
 package it.softwaredoctor.sivota.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,14 +31,15 @@ public class Votazione {
     @Column(name="titolo")
     private String titolo;
 
-    @JsonIgnore
-    @ManyToOne
+//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+//    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "votazione", cascade = CascadeType.ALL)
-    @ToString.Exclude
+//    @JsonIgnore
+    @OneToMany(mappedBy = "votazione", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @ToString.Exclude
     private List<Domanda> domande;
 
     @ElementCollection

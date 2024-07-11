@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,7 +54,7 @@ public class UserService {
             log.warn("Login failed: user not found for username {}", userDTO.getUsername());
             return false;
         }
-        if (user.isEnabled()) {
+        if (!user.isEnabled()) {
             log.warn("Login failed: user {} is not enabled", userDTO.getUsername());
             return false;
         }
@@ -66,6 +67,7 @@ public class UserService {
         log.info("User {} logged in successfully", userDTO.getUsername());
         return true;
     }
+
 
 //    public boolean login(UserLoginDTO userDTO) {
 //        User user = userRepository.findByUsername(userDTO.getUsername());
@@ -146,10 +148,23 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public UserDetails getCurrentUser() {
+        return customUserDetailsService.loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+    public User getUserFromUserDetails(UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User non trovato con username: " + username);
+        }
+        return user;
+    }
+
 //    @PreAuthorize("isAuthenticated()")
     public List<VotazioneDTO> findAllByUuidUser(UUID uuidUser) {
-        User user = userRepository.findByUuidUser(uuidUser)
-                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserDetails userDetails = getCurrentUser();
+        User user = getUserFromUserDetails(userDetails);
         return user.getVotazione().stream()
                 .map(votazioneMapper::votazioneToVotazioneDto)
                 .collect(Collectors.toList());
@@ -206,5 +221,20 @@ public class UserService {
         return "valid";
     }
 
+    public User findByUsername(String username) {
+        Optional<User> userOptional = Optional.ofNullable(userRepository.findByUsername(username));
+        if (userOptional.isPresent()) {
+            return userOptional.get();
+        } else {
+            throw new RuntimeException("User not found with username: " + username);
+        }
+    }
+
+
+
+//    private User convertToCustomUser(UserDetails userDetails) {
+//        String username = userDetails.getUsername();
+//        return findByUsername(username);
+//    }
 
 }

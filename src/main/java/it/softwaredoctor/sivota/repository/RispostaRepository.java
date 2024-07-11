@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface RispostaRepository extends JpaRepository<Risposta, Long> {
 
+    Risposta findByUuidRisposta(UUID uuidRisposta);
 
 }

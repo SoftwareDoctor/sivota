@@ -25,6 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -87,6 +88,8 @@ public class VotazioneController implements VotazioneApi {
     public ResponseEntity<Void> createVotazione(@RequestBody VotazioneDTO votazioneDTO) {
         try {
             UserDetails currentUser = getCurrentUser();
+//            UserDetails userDetails = getCurrentUser();
+//            User currentUser = convertToCustomUser(userDetails);
             if (votazioneDTO != null && currentUser != null) {
 //                UUID uuidUser = ((User) currentUser).getUuidUser();
                 UUID uuidVotazione = votazioneService.createVotazione(votazioneDTO, currentUser);
@@ -101,6 +104,7 @@ public class VotazioneController implements VotazioneApi {
             }
         } catch (EntityNotFoundException e) {
             log.error("Utente non trovato", e);
+            log.info(VotazioneController.class.getName());
             return ResponseEntity.badRequest().build();
         }
     }
@@ -135,4 +139,12 @@ public class VotazioneController implements VotazioneApi {
         return customUserDetailsService
                 .loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
     }
+
+    private User convertToCustomUser(UserDetails userDetails) {
+
+        String username = userDetails.getUsername();
+
+        return userService.findByUsername(username);
+    }
+
 }

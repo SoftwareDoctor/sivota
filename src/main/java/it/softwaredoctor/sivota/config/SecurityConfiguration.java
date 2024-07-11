@@ -1,5 +1,6 @@
 package it.softwaredoctor.sivota.config;
 
+import it.softwaredoctor.sivota.service.CustomUserDetailsService;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,9 +126,9 @@ public class SecurityConfiguration {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    private final CustomUserDetailsService customUserDetailsService;
 
-
-    private final UserDetailsService userDetailsService;
+//    private final UserDetailsService userDetailsService;
 
     @Bean
     public RequestMatcher notXmlHttpRequestMatcher() {
@@ -157,6 +158,11 @@ public class SecurityConfiguration {
 //        return authProvider;
 //    }
 
+protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder());
+}
+
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -164,6 +170,7 @@ public class SecurityConfiguration {
                         .requestMatchers(notXmlHttpRequestMatcher()).permitAll()
 //                        .requestMatchers(HttpMethod.POST,"/api/v1/user/**").permitAll()
                                 .requestMatchers("/api/v1/user").permitAll()
+                                .requestMatchers("api/v1/user/login").permitAll()
                         .requestMatchers("/api/v1/votazione/**").authenticated()
                         .anyRequest().authenticated()
                 )
@@ -178,7 +185,7 @@ public class SecurityConfiguration {
                 .httpBasic(Customizer.withDefaults())
                 .rememberMe(rememberMe -> rememberMe
                         .tokenValiditySeconds(3600)
-                        .userDetailsService(userDetailsService)
+                        .userDetailsService(customUserDetailsService)
                 )
                 .build();
     }
