@@ -142,6 +142,7 @@ public class User implements UserDetails {
         this.password = password;
         this.roleName = roleName;
     }
+
 //
 //    @Override
 //    public String getPassword() {

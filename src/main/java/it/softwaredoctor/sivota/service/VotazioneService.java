@@ -103,42 +103,26 @@ public class VotazioneService {
 //        return votazione.getUuidVotazione();
 //    }
 
-    public UserDetails getCurrentUser() {
-        return customUserDetailsService.loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-    }
 
-    public User getUserFromUserDetails(UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("User non trovato con username: " + username);
-        }
-        return user;
-    }
+
+
 
 
     //Il metodo createVotazione esegue i seguenti step:
     //1. Crea la votazione 2. Crea le domande 3. Crea le risposte 4. Salva tutto 5. Invio email alle email votantiEmail
     @Transactional
     public UUID createVotazione(VotazioneDTO votazioneDTO, UserDetails currentUser) {
-        UserDetails userDetails = getCurrentUser();
-        User user = getUserFromUserDetails(userDetails);
-
+        User user = userService.getUserFromUserDetails(currentUser);
         Votazione votazione = votazioneMapper.votazioneDTOToVotazione(votazioneDTO);
         votazione.setUser(user);
-
         List<Domanda> domande = new ArrayList<>();
         for (DomandaDTO domandaDTO : votazioneDTO.getDomande()) {
             Domanda domanda = domandaService.createDomanda(domandaDTO);
             domanda.setVotazione(votazione);
             domande.add(domanda);
         }
-        votazione.setDomande(domande); // Associare le domande alla votazione
-
-        // Salvare la votazione (questo salva anche le domande e le risposte grazie alle relazioni impostate)
+        votazione.setDomande(domande);
         votazioneRepository.save(votazione);
-
-        // Creata la votazione inviare l'email
         emailService.sendEmail(votazioneDTO.getVotantiEmail(), votazione.getUuidVotazione());
         return votazione.getUuidVotazione();
     }
@@ -154,14 +138,12 @@ public class VotazioneService {
         }
         Votazione votazione = votazioneOptional.get();
         votazioneMapper.updateVotazioneFromDTO(votazioneDTO, votazione);
-
         votazioneRepository.save(votazione);
     }
 
 
 //    // Metodo per ottenere l'indirizzo email del compilatore
 //    private String getEmailCompilazione(VotazioneDTO votazioneDTO) {
-//
 //        return votazioneDTO.getEmailCompilazione();
 //    }
 
@@ -172,9 +154,9 @@ public class VotazioneService {
 //    }
 
 
-    //    @PreAuthorize("isAuthenticated()")
-    public void getRisultatoNumerico(UUID uuidUser, UUID uuidVotazione, String votanteEmail) {
-        Votazione votazione = userService.findVotazioneEntityByUuidUserUuidVotazione(uuidUser, uuidVotazione);
+    public void getRisultatoNumerico(UUID uuidVotazione, String votanteEmail) {
+        UUID uuidUser = userService.getCurrentUserUuid();
+        Votazione votazione = userService.findVotazioneEntityByUuidUserUuidVotazione(uuidUser,uuidVotazione);
         List<Domanda> domande = votazione.getDomande();
 
         for (Domanda domanda : domande) {
@@ -182,14 +164,14 @@ public class VotazioneService {
 
             for (Risposta risposta : domanda.getRisposte()) {
                 if (risposta.getIsSelected()) {
-                    risultatoNumericoTotale += risposta.getRisultatoNumerico();
+                    risposta.setRisultatoNumerico(risposta.getRisultatoNumerico() + 1);
                 } else {
                     risultatoNumericoTotale = risposta.getRisultatoNumerico();
                 }
             }
 
             for (Risposta risposta : domanda.getRisposte()) {
-                risposta.setRisultatoNumerico(risultatoNumericoTotale);
+//                risposta.setRisultatoNumerico(risultatoNumericoTotale);
 //                rispostaRepository.save(risposta);
 
                 if (votazione.getIsAnonymous() == false) {
@@ -253,6 +235,7 @@ public class VotazioneService {
                 .orElseThrow(() -> new EntityNotFoundException("Votazione con ID " + votazioneId + " non trovata"));
         return votazione.getVotantiEmail();
     }
+
 
 
 }

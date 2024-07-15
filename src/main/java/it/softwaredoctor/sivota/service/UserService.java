@@ -16,10 +16,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,39 +66,24 @@ public class UserService {
         return true;
     }
 
+    @Transactional
+    public void logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            User user = getUserFromUserDetails2();
+            if (user != null && user.isAccesso() && user.isEnabled()) {
+                user.setAccesso(false);
+                user.setEnabled(false);
+                userRepository.save(user);
+                log.info("User {} logged out successfully", user.getUsername());
+            } else {
+                log.warn("Logout failed: User {} is already logged out or disabled", user.getUsername());
+            }
+        } else {
+            log.warn("Logout failed: No authenticated user found");
+        }
+    }
 
-//    public boolean login(UserLoginDTO userDTO) {
-//        User user = userRepository.findByUsername(userDTO.getUsername());
-//
-//        if (user != null && user.isEnabled() &&
-//                passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
-//
-//            user.setAccesso(true);
-//            userRepository.save(user);
-//            return true;
-//        }
-//
-//        return false;
-//    }
-
-//    @PreAuthorize("permitAll()")
-//        if (userRepository.existsByUsername(userDTO.getUsername())) {
-//            log.error("Username already exists: " + userDTO.getUsername());
-//            // Gestione dell'errore o avviso, ad esempio lanciare un'eccezione o ritornare un messaggio di errore
-//            throw new IllegalArgumentException("Username already exists");
-//        }
-//public void createUser(UserDTO userDTO) {
-//    if (userRepository.existsByUsername(userDTO.getUsername())) {
-//        throw new IllegalArgumentException("Username already exists: " + userDTO.getUsername());
-//    }
-//    if (userRepository.existsByEmail(userDTO.getEmail())) {
-//        throw new IllegalArgumentException("Email already exists: " + userDTO.getEmail());
-//    }
-//    User user = userMapper.userDTOToUser(userDTO);
-//    user.setPassword(passwordEncoder.encode(user.getPassword()));
-//    user.setRegistrato(true);
-//    userRepository.save(user);
-//}
 
     public boolean createUser(UserDTO userDTO) throws MessagingException {
         if (userRepository.existsByUsernameOrEmail(userDTO.getUsername(), userDTO.getEmail())) {
@@ -124,9 +107,12 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteVotazioniByUserAndUuidVotazione  (UUID uuidUser, UUID uuidVotazione) {
-        User user = userRepository.findByUuidUser(uuidUser)
-                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
+    public void deleteVotazioniByUserAndUuidVotazione  (User user,UUID uuidVotazione) {
+//        User user = userRepository.findByUuidUser(uuidUser)
+//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
+        UserDetails userDetails = getCurrentUser();
+        user = getUserFromUserDetails(userDetails);
+//        UUID uuidUser = user.getUuidUser();
 
         votazioneRepository.deleteByUserAndUuidVotazione(user, uuidVotazione);
     }
@@ -138,9 +124,12 @@ public class UserService {
 
     //    @PreAuthorize("isAuthenticated()")
     @Transactional
-    public void deleteAllVotazioniByUser(UUID uuidUser) {
-        User user = userRepository.findByUuidUser(uuidUser)
-                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
+    public void deleteAllVotazioniByUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserDetails userDetails = getCurrentUser();
+        User user = getUserFromUserDetails(userDetails);
+//        User user = userRepository.findByUuidUser(uuidUser)
+//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         List<Votazione> votazioni = user.getVotazione();
 
         votazioni.forEach(votazioneRepository::delete);
@@ -148,20 +137,9 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public UserDetails getCurrentUser() {
-        return customUserDetailsService.loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-    }
-    public User getUserFromUserDetails(UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("User non trovato con username: " + username);
-        }
-        return user;
-    }
 
 //    @PreAuthorize("isAuthenticated()")
-    public List<VotazioneDTO> findAllByUuidUser(UUID uuidUser) {
+    public List<VotazioneDTO> findAllByUuidUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserDetails userDetails = getCurrentUser();
         User user = getUserFromUserDetails(userDetails);
@@ -170,10 +148,13 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-//    @PreAuthorize("isAuthenticated()")
     public VotazioneDTO findVotazioneByUuidUserUuidVotazione(UUID uuidUser, UUID uuidVotazione) {
-        User user = userRepository.findByUuidUser(uuidUser)
-                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
+//        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+//        UserDetails userDetails = getCurrentUser();
+        User user = getUserFromUserDetails2();
+//        UUID userUuid =  getCurrentUserUuid();
+//        User user = userRepository.findByUuidUser(uuidUser)
+//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         Votazione votazione = user.getVotazione().stream()
                 .filter(v -> v.getUuidVotazione().equals(uuidVotazione))
                 .findAny()
@@ -182,8 +163,11 @@ public class UserService {
     }
 
     public Votazione findVotazioneEntityByUuidUserUuidVotazione(UUID uuidUser, UUID uuidVotazione) {
-        User user = userRepository.findByUuidUser(uuidUser)
-                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserDetails userDetails = getCurrentUser();
+        User user = getUserFromUserDetails(userDetails);
+//        User user = userRepository.findByUuidUser(uuidUser)
+//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         return user.getVotazione().stream()
                 .filter(v -> v.getUuidVotazione().equals(uuidVotazione))
                 .findAny()
@@ -191,6 +175,7 @@ public class UserService {
     }
 
     public void resetPassword(String email, String newPassword) {
+
         User user = userRepository.findByEmail(email);
         if (user != null) {
             user.setPassword(newPassword);
@@ -230,11 +215,32 @@ public class UserService {
         }
     }
 
+    public UUID getCurrentUserUuid() {
+        UserDetails userDetails = getCurrentUser();
+        User user = getUserFromUserDetails(userDetails);
+        return user.getUuidUser();
+    }
 
+    public UserDetails getCurrentUser() {
+        return customUserDetailsService.loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+    public User getUserFromUserDetails(UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User non trovato con username: " + username);
+        }
+        return user;
+    }
 
-//    private User convertToCustomUser(UserDetails userDetails) {
-//        String username = userDetails.getUsername();
-//        return findByUsername(username);
-//    }
+    public User getUserFromUserDetails2() {
+        UserDetails userDetails = getCurrentUser();
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User non trovato con username: " + username);
+        }
+        return user;
+    }
 
 }

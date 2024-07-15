@@ -3,7 +3,6 @@ package it.softwaredoctor.sivota.controller;
 import it.softwaredoctor.sivota.api.VotazioneApi;
 import it.softwaredoctor.sivota.model.User;
 import it.softwaredoctor.sivota.dto.VotazioneDTO;
-//import it.softwaredoctor.sivota.service.CustomUserDetailsService;
 import it.softwaredoctor.sivota.service.CustomUserDetailsService;
 import it.softwaredoctor.sivota.service.EmailService;
 import it.softwaredoctor.sivota.service.UserService;
@@ -13,10 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.context.SecurityContextHolder;
-//import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +20,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,18 +31,6 @@ public class VotazioneController implements VotazioneApi {
     private final EmailService emailService;
     private final UserService userService;
     private final CustomUserDetailsService customUserDetailsService;
-
-
-//    private UserDetails getCurrentUser() {
-//        return customUserDetailsService
-//                .loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-//    }
-
-
-//    private UserDetails getCurrentUser() {
-//        return userService
-//                .loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-//    }
 
 
 //    @PostMapping("/new/{uuidUser}")
@@ -88,8 +70,6 @@ public class VotazioneController implements VotazioneApi {
     public ResponseEntity<Void> createVotazione(@RequestBody VotazioneDTO votazioneDTO) {
         try {
             UserDetails currentUser = getCurrentUser();
-//            UserDetails userDetails = getCurrentUser();
-//            User currentUser = convertToCustomUser(userDetails);
             if (votazioneDTO != null && currentUser != null) {
 //                UUID uuidUser = ((User) currentUser).getUuidUser();
                 UUID uuidVotazione = votazioneService.createVotazione(votazioneDTO, currentUser);
@@ -104,20 +84,16 @@ public class VotazioneController implements VotazioneApi {
             }
         } catch (EntityNotFoundException e) {
             log.error("Utente non trovato", e);
-            log.info(VotazioneController.class.getName());
             return ResponseEntity.badRequest().build();
         }
     }
 
 
-    @PatchMapping("/{uuidVotazione}")
-    public ResponseEntity<Void> getRisultatoNumerico(@RequestParam UUID uuidVotazione, @RequestParam String email) {
-        UserDetails userDetails = getCurrentUser();
-        User currentUser = (User) userDetails;
-        UUID uuidUser = currentUser.getUuidUser();
-        votazioneService.getRisultatoNumerico(uuidUser, uuidVotazione, email);
-        return ResponseEntity.ok().build();
-    }
+//    @PatchMapping("/{uuidVotazione}/{email}")
+//    public ResponseEntity<Void> getRisultatoNumerico(@RequestParam UUID uuidVotazione, @RequestParam String email) {
+//        votazioneService.getRisultatoNumerico(uuidVotazione, email);
+//        return ResponseEntity.ok().build();
+//    }
 
     @PostMapping("/email/{uuidVotazione}")
     public ResponseEntity<Void> sendEmailVotazione(@PathVariable UUID uuidVotazione) {

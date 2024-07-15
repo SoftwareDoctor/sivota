@@ -18,6 +18,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.*;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -38,6 +40,8 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 
 import java.util.Arrays;
 import java.util.Collections;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 //@Configuration
 //@RequiredArgsConstructor
@@ -171,9 +175,12 @@ protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 //                        .requestMatchers(HttpMethod.POST,"/api/v1/user/**").permitAll()
                                 .requestMatchers("/api/v1/user").permitAll()
                                 .requestMatchers("api/v1/user/login").permitAll()
+                                .requestMatchers("api/v1/user/logout").authenticated()
                         .requestMatchers("/api/v1/votazione/**").authenticated()
                         .anyRequest().authenticated()
+
                 )
+
 //                .authenticationProvider(authenticationProvider())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -182,13 +189,29 @@ protected void configure(AuthenticationManagerBuilder auth) throws Exception {
                        )
                 .cors(cors -> cors.disable())
                 .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(withDefaults())
+//                .formLogin(withDefaults())
                 .rememberMe(rememberMe -> rememberMe
-                        .tokenValiditySeconds(3600)
+                        .tokenValiditySeconds(60)
                         .userDetailsService(customUserDetailsService)
+                )  .logout(logout -> logout
+//                                .logoutRequestMatcher(new AntPathRequestMatcher("/api/v1/user/logout")).permitAll()
+//                        .logoutUrl("/api/v1/user/logout") // URL per il logout
+//                        .logoutSuccessUrl("/login?logout") // Redirect dopo il logout
+//                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID") // Se si utilizza HttpSession, invalidarla
                 )
                 .build();
     }
+//    @Bean
+//    public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
+//        StrictHttpFirewall firewall = new StrictHttpFirewall();
+//        firewall.setAllowUrlEncodedPercent(true);
+//        firewall.setAllowUrlEncodedSlash(true);
+//        firewall.setAllowUrlEncodedPeriod(true);
+//        firewall.setAllowSemicolon(true);
+//        return firewall;
+//    }
 
 }
 
