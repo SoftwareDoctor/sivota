@@ -26,6 +26,7 @@ import java.util.UUID;
 public class EmailService implements ApplicationListener<OnRegistrationCompleteEvent> {
 
     private final JavaMailSender javaMailSender;
+    private final TokenService tokenService;
 
     @Value("${spring.mail.username}")
 //    private String sender = "andrea_italiano87@yahoo.com";
@@ -33,30 +34,61 @@ public class EmailService implements ApplicationListener<OnRegistrationCompleteE
 
 
     //    @PreAuthorize("isAuthenticated()")
-    public void sendEmail(List<String> recipient, UUID uuidVotazione) {
+//    public void sendEmail(List<String> recipient, UUID uuidVotazione) {
+//        try {
+//            log.info("Sending email to {} with subject {}", recipient, EmailDetails.SUBJECT);
+////            SimpleMailMessage email = new SimpleMailMessage();
+//
+//            String emailBody = EmailDetails.generateBodyLinkWithUUID(uuidVotazione);
+//
+//            MimeMessage email = javaMailSender.createMimeMessage();
+//            MimeMessageHelper helper = new MimeMessageHelper(email, true);
+//            helper.setTo(recipient.toArray(new String[0]));
+//            helper.setFrom(sender);
+//            helper.setSubject(EmailDetails.SUBJECT);
+//            helper.setText(emailBody, true);
+//
+//            // Aggiunta di un allegato
+////            FileSystemResource file = new FileSystemResource(new File("path/to/attachment.pdf"));
+////            helper.addAttachment("Attachment.pdf", file);
+//
+//            javaMailSender.send(email);
+//            log.info("Mail sent successfully");
+//        } catch (MailException exception) {
+//            log.debug("Failure occurred while sending email");
+//        } catch (MessagingException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+
+    public void sendEmail(List<String> recipientEmails, UUID uuidVotazione) {
         try {
-            log.info("Sending email to {} with subject {}", recipient, EmailDetails.SUBJECT);
-//            SimpleMailMessage email = new SimpleMailMessage();
+            log.info("Sending email to {} with subject {}", recipientEmails, EmailDetails.SUBJECT);
 
-            String emailBody = EmailDetails.generateBodyLinkWithUUID(uuidVotazione);
+            for (String email : recipientEmails) {
+                String token = tokenService.generateToken(email, uuidVotazione);
 
-            MimeMessage email = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(email, true);
-            helper.setTo(recipient.toArray(new String[0]));
-            helper.setFrom(sender);
-            helper.setSubject(EmailDetails.SUBJECT);
-            helper.setText(emailBody, true);
+                // Crea l'URL con i parametri uuidVotazione e token
+                String url = String.format("http://localhost:8080/api/v1/votazione/view?uuidVotazione=%s&token=%s", uuidVotazione, token);
 
-            // Aggiunta di un allegato
-//            FileSystemResource file = new FileSystemResource(new File("path/to/attachment.pdf"));
-//            helper.addAttachment("Attachment.pdf", file);
+                String emailBody = EmailDetails.generateBodyLinkWithUUID(url);
 
-            javaMailSender.send(email);
-            log.info("Mail sent successfully");
+                MimeMessage emailMessage = javaMailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(emailMessage, true);
+                helper.setTo(email);
+                helper.setFrom(sender);
+                helper.setSubject(EmailDetails.SUBJECT);
+                helper.setText(emailBody, true);
+
+                javaMailSender.send(emailMessage);
+
+                log.info("Mail sent to {} successfully", email);
+            }
         } catch (MailException exception) {
-            log.debug("Failure occurred while sending email");
+            log.error("Failure occurred while sending email", exception);
         } catch (MessagingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 

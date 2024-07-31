@@ -1,5 +1,6 @@
 package it.softwaredoctor.sivota.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,12 +27,12 @@ public class Domanda {
 
     private String testo;
 
-//    @JsonIgnore
-    @OneToMany(mappedBy = "domanda", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "domanda", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Risposta> risposte;
 
-//    @JsonIgnore
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "votazione_id")
     private Votazione votazione;
@@ -41,50 +42,4 @@ public class Domanda {
         this.uuidDomanda = UUID.randomUUID();
     }
 
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public String getTesto() {
-//        return testo;
-//    }
-//
-//    public List<Risposta> getRisposte() {
-//        return risposte;
-//    }
-//
-//    public Votazione getVotazione() {
-//        return votazione;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public void setUuidDomanda(UUID uuidDomanda) {
-//        this.uuidDomanda = uuidDomanda;
-//    }
-//
-//    public void setTesto(String testo) {
-//        this.testo = testo;
-//    }
-//
-//    public void setRisposte(List<Risposta> risposte) {
-//        this.risposte = risposte;
-//    }
-//
-//    public void setVotazione(Votazione votazione) {
-//        this.votazione = votazione;
-//    }
-
-//    @Override
-//    public String toString() {
-//        return "Domanda{" +
-//                "id=" + id +
-//                ", uuidDomanda=" + uuidDomanda +
-//                ", testo='" + testo + '\'' +
-//                ", risposte=" + risposte +
-//                ", votazione=" + votazione +
-//                '}';
-//    }
 }

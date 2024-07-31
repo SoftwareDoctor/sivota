@@ -2,6 +2,7 @@ package it.softwaredoctor.sivota.service;
 
 import it.softwaredoctor.sivota.dto.DomandaDTO;
 import it.softwaredoctor.sivota.dto.RispostaDTO;
+import it.softwaredoctor.sivota.dto.RispostaDTOAggiornamento;
 import it.softwaredoctor.sivota.dto.VotazioneDTO;
 import it.softwaredoctor.sivota.mapper.DomandaMapper;
 import it.softwaredoctor.sivota.mapper.VotazioneMapper;
@@ -19,14 +20,17 @@ import lombok.RequiredArgsConstructor;
 //import org.springframework.security.access.prepost.PreAuthorize;
 //import org.springframework.security.core.context.SecurityContextHolder;
 //import org.springframework.security.core.userdetails.UserDetails;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class VotazioneService {
@@ -40,6 +44,7 @@ public class VotazioneService {
     private final RispostaService rispostaService;
     private final EmailService emailService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final TokenService tokenService;
 
     //    @PreAuthorize("isAuthenticated()")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -153,42 +158,50 @@ public class VotazioneService {
 //                .orElseThrow(() -> new EntityNotFoundException("Votazione with UUID " + uuidVotazione + " not found"));
 //    }
 
-
-    public void getRisultatoNumerico(UUID uuidVotazione, String votanteEmail) {
+    public VotazioneDTO getRisultatoNumerico(UUID uuidVotazione) {
+        // Ottieni l'utente corrente e la votazione
         UUID uuidUser = userService.getCurrentUserUuid();
-        Votazione votazione = userService.findVotazioneEntityByUuidUserUuidVotazione(uuidUser,uuidVotazione);
+        Votazione votazione = userService.findVotazioneEntityByUuidUserUuidVotazione(uuidUser, uuidVotazione);
+
+        // Ottieni tutte le domande nella votazione
         List<Domanda> domande = votazione.getDomande();
 
+        // Itera su tutte le domande
         for (Domanda domanda : domande) {
-            int risultatoNumericoTotale = 0;
+            // Crea una mappa per tenere traccia dei conteggi delle risposte per ciascuna risposta
+            Map<Risposta, Integer> conteggiRisposte = new HashMap<>();
 
+            // Itera su tutte le risposte per ciascuna domanda
             for (Risposta risposta : domanda.getRisposte()) {
+                // Inizializza il conteggio della risposta se non è già presente nella mappa
+                conteggiRisposte.putIfAbsent(risposta, 0);
+
+                // Incrementa il conteggio se la risposta è selezionata
                 if (risposta.getIsSelected()) {
-                    risposta.setRisultatoNumerico(risposta.getRisultatoNumerico() + 1);
-                } else {
-                    risultatoNumericoTotale = risposta.getRisultatoNumerico();
+                    int nuovoConteggio = conteggiRisposte.get(risposta) + 1;
+                    conteggiRisposte.put(risposta, nuovoConteggio);
                 }
             }
 
-            for (Risposta risposta : domanda.getRisposte()) {
-//                risposta.setRisultatoNumerico(risultatoNumericoTotale);
-//                rispostaRepository.save(risposta);
-
-                if (votazione.getIsAnonymous() == false) {
-                    List<String> votantiEmail = risposta.getVotantiEmail();
-                    if (risposta.getVotantiEmail().contains(votanteEmail)) {
-                        votantiEmail.add(votanteEmail);
-                        risposta.setVotantiEmail(votantiEmail);
-                    }
-                }
-
+            // Aggiorna il conteggio per ogni risposta
+            for (Map.Entry<Risposta, Integer> entry : conteggiRisposte.entrySet()) {
+                Risposta risposta = entry.getKey();
+                Integer conteggioTotale = entry.getValue();
+                risposta.setRisultatoNumerico(conteggioTotale);
             }
         }
+
+        // Salva tutte le risposte aggiornate
         List<Risposta> risposteToUpdate = domande.stream()
                 .flatMap(domanda -> domanda.getRisposte().stream())
                 .collect(Collectors.toList());
         rispostaRepository.saveAll(risposteToUpdate);
+
+        // Converti l'oggetto Votazione aggiornato in VotazioneDTO
+        return votazioneMapper.votazioneToVotazioneDto(votazione);
     }
+
+
 
 //    public void markedVotazioneAnonymousOrWithEmail(UUID uuidVotazione) {
 //       Optional <Votazione> votazioneOptional = votazioneRepository.findByUuidVotazione(uuidVotazione);
@@ -237,5 +250,90 @@ public class VotazioneService {
     }
 
 
+//    public void updateRisposte(UUID votazioneId, List<Risposta> risposteAggiornate) {
+//        // Recupera la votazione tramite l'UUID
+//        Optional<Votazione> votazioneOptional = votazioneRepository.findByUuidVotazione(votazioneId);
+//        if (!votazioneOptional.isPresent()) {
+//            throw new RuntimeException("Votazione non trovata con id: " + votazioneId);
+//        }
+//        Votazione votazione = votazioneOptional.get();
+//        boolean updateMade = false;  // Flag per tracciare se è stata fatta un'aggiornamento
+//
+//        // Crea una lista di domande e risposte
+//        List<Domanda> domande = votazione.getDomande();
+//
+//        // Per ogni risposta aggiornata
+//        for (Risposta rispostaAggiornata : risposteAggiornate) {
+//            // Ottieni l'ID della domanda associata alla risposta aggiornata
+//            Long idDomandaAggiornata = rispostaAggiornata.getDomanda().getId();
+//
+//            // Trova la domanda corrispondente nella votazione
+//            for (Domanda domanda : domande) {
+//                if (domanda.getId().equals(idDomandaAggiornata)) {
+//                    // Trova la risposta esistente per la stessa domanda e testo
+//                    for (Risposta rispostaEsistente : domanda.getRisposte()) {
+//                        if (rispostaEsistente.getTesto().equals(rispostaAggiornata.getTesto())) {
+//                            // Aggiorna solo se i dati sono cambiati
+//                            if (!rispostaEsistente.getIsSelected().equals(rispostaAggiornata.getIsSelected())) {
+//                                rispostaEsistente.setDataRisposta(LocalDate.now());
+//                                rispostaEsistente.setIsSelected(rispostaAggiornata.getIsSelected());
+//                                updateMade = true;
+//                            }
+//                            break; // Uscire dal ciclo una volta trovata la risposta
+//                        }
+//                    }
+//                    break; // Uscire dal ciclo una volta trovata la domanda
+//                }
+//            }
+//        }
+//
+//        // Salva solo se ci sono stati aggiornamenti
+//        if (updateMade) {
+//            votazioneRepository.save(votazione);
+//        }
+//    }
 
+    public void updateAllRisposte(UUID uuidVotazione, List<RispostaDTOAggiornamento> aggiornamenti, String token) {
+        Optional<Votazione> votazioneOpt = votazioneRepository.findByUuidVotazione(uuidVotazione);
+        if (votazioneOpt.isEmpty()) {
+            throw new RuntimeException("Votazione con UUID " + uuidVotazione + " non trovata.");
+        }
+
+        Votazione votazione = votazioneOpt.get();
+
+        for (RispostaDTOAggiornamento dto : aggiornamenti) {
+            Optional<Risposta> rispostaOpt = Optional.ofNullable(rispostaRepository.findByUuidRisposta(dto.getUuidRisposta()));
+
+            if (rispostaOpt.isPresent()) {
+                Risposta risposta = rispostaOpt.get();
+                risposta.setIsSelected(dto.getIsSelected());
+
+                // Se la risposta è selezionata, aggiorna la data di risposta
+                if (dto.getIsSelected() != null && dto.getIsSelected()) {
+                    risposta.setDataRisposta(LocalDate.now());
+                } else {
+                    risposta.setDataRisposta(null);
+                }
+
+                // Aggiungi l'email del votante alla lista se la votazione non è anonima
+                if (!votazione.getIsAnonymous() && Boolean.TRUE.equals(risposta.getIsSelected())) {
+                    String email = tokenService.getEmailFromToken(token);
+                    List<String> votantiEmail = risposta.getVotantiEmail();
+
+                    if (votantiEmail == null) {
+                        votantiEmail = new ArrayList<>();
+                    }
+
+                    if (!votantiEmail.contains(email)) {
+                        votantiEmail.add(email);
+                    }
+
+                    risposta.setVotantiEmail(votantiEmail);
+                }
+
+                rispostaRepository.save(risposta);
+            }
+        }
+    }
 }
+

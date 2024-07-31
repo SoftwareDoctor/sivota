@@ -21,6 +21,7 @@ public class DomandaService {
     private final DomandaRepository domandaRepository;
     private final RispostaService rispostaService;
     private final DomandaMapper domandaMapper;
+    private final RispostaRepository rispostaRepository;
 
     @Transactional
     public Domanda createDomanda(DomandaDTO domandaDTO) {
@@ -29,11 +30,6 @@ public class DomandaService {
         for (RispostaDTO rispostaDTO : domandaDTO.getRisposte()) {
             Risposta risposta = rispostaService.createRisposta(rispostaDTO);
             risposta.setDomanda(domanda);
-
-//            if (risposta.getIsSelected()) {
-//                risposta.setRisultatoNumerico(risposta.getRisultatoNumerico() + 1);
-//            }
-
             risposte.add(risposta);
         }
         domanda.setRisposte(risposte);

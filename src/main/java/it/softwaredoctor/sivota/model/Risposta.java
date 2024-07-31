@@ -29,7 +29,7 @@ public class Risposta {
     private String testo;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "domanda_id")
     private Domanda domanda;
 
@@ -45,6 +45,7 @@ public class Risposta {
     @Column(name = "email")
     private List<String> votantiEmail = new ArrayList<>();
 
+
     @PrePersist
     @PreUpdate
     private void ensureFieldsAreNotNull() {
@@ -57,8 +58,10 @@ public class Risposta {
         if(this.risultatoNumerico == null) {
             this.risultatoNumerico = 0;
         }
-        if(this.dataRisposta == null) {
+        if(this.dataRisposta == null && !this.getIsSelected()) {
             this.dataRisposta = LocalDate.now();
+        } else {
+            this.dataRisposta = null;
         }
     }
 

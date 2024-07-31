@@ -175,6 +175,7 @@ protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 //                        .requestMatchers(HttpMethod.POST,"/api/v1/user/**").permitAll()
                                 .requestMatchers("/api/v1/user").permitAll()
                                 .requestMatchers("api/v1/user/login").permitAll()
+                                .requestMatchers("/api/v1/votazione/view").permitAll()
                                 .requestMatchers("api/v1/user/logout").authenticated()
                         .requestMatchers("/api/v1/votazione/**").authenticated()
                         .anyRequest().authenticated()

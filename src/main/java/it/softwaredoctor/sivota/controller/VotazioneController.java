@@ -1,17 +1,18 @@
 package it.softwaredoctor.sivota.controller;
 
 import it.softwaredoctor.sivota.api.VotazioneApi;
+import it.softwaredoctor.sivota.dto.RispostaDTOAggiornamento;
+import it.softwaredoctor.sivota.model.Risposta;
 import it.softwaredoctor.sivota.model.User;
 import it.softwaredoctor.sivota.dto.VotazioneDTO;
-import it.softwaredoctor.sivota.service.CustomUserDetailsService;
-import it.softwaredoctor.sivota.service.EmailService;
-import it.softwaredoctor.sivota.service.UserService;
-import it.softwaredoctor.sivota.service.VotazioneService;
+import it.softwaredoctor.sivota.model.Votazione;
+import it.softwaredoctor.sivota.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,40 @@ public class VotazioneController implements VotazioneApi {
     private final EmailService emailService;
     private final UserService userService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final TokenService tokenService;
 
+
+    @PatchMapping("/conteggio")
+    public ResponseEntity<VotazioneDTO> updateConteggio(@RequestParam("uuid") UUID uuidVotazione) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            VotazioneDTO votazione = votazioneService.getRisultatoNumerico(uuidVotazione);
+            return new ResponseEntity<>(votazione, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    @PatchMapping("/view")
+    public ResponseEntity<Void> updateAllRisposte(@RequestParam("uuidVotazione") UUID uuidVotazione, @RequestParam("token") String token,
+                                                 @RequestBody List<RispostaDTOAggiornamento> aggiornamenti) {
+        try {
+            // Chiama il servizio per aggiornare tutte le risposte
+            votazioneService.updateAllRisposte(uuidVotazione, aggiornamenti, token);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+//    public ResponseEntity<Void> updateRisposte(@RequestParam("uuidVotazione") UUID uuidVotazione, @RequestParam("token") String token, @RequestBody List<Risposta> risposte) {
+//        boolean isValid = tokenService.validateToken(uuidVotazione, token);
+//        if (isValid) {
+//            votazioneService.updateRisposte(uuidVotazione, risposte);
+//            return new ResponseEntity<>(HttpStatus.OK);
+//        } else {
+//            log.error("Error not valid token");
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//    }
 
 //    @PostMapping("/new/{uuidUser}")
 //    public ResponseEntity<Void> createVotazione(@RequestBody VotazioneDTO votazioneDTO, @PathVariable UUID uuidUser) {
