@@ -1,16 +1,11 @@
 package it.softwaredoctor.sivota.utility;
 
-import java.util.UUID;
-
 
 public class EmailDetails {
-
 
     public static final String SUBJECT = "Votazione";
     public static final String SUBJECTCONFIRM ="Registrazione";
     public static final String LINKVOTAZIONE = "http://localhost:8080/api/v1/votazione/";
-
-
     public static final String BODY = "<h1> Benvenut alla votazione di oggi. " + "<p>Ecco il link per votare: <a href=\"" + LINKVOTAZIONE + "\"> Grazie</a></p>";
 
 

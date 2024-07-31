@@ -14,7 +14,5 @@ public interface VotazioneRepository extends JpaRepository<Votazione, Long> {
 
     Optional<Votazione> findByUuidVotazione(UUID uuidVotazione);
 
-    Optional<Votazione> findByUserAndUuidVotazione(User user, UUID uuidVotazione);
-
     void deleteByUserAndUuidVotazione(User user, UUID uuidVotazione);
 }

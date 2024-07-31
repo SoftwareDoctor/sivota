@@ -1,11 +1,8 @@
 package it.softwaredoctor.sivota.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +36,6 @@ public class Votazione {
 
     @JsonIgnore
     @OneToMany(mappedBy = "votazione", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//    @ToString.Exclude
     private List<Domanda> domande;
 
     @ElementCollection
@@ -47,7 +43,6 @@ public class Votazione {
     @Column(name = "email")
     private List<String> votantiEmail = new ArrayList<>();
 
-//    @Builder.Default
     private LocalDate dataCreazione = LocalDate.now();
 
     @Column(name = "isAnonymous")
@@ -61,6 +56,4 @@ public class Votazione {
             this.dataCreazione = LocalDate.now();
         }
     }
-
-
 }

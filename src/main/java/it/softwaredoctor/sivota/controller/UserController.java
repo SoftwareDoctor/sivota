@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -86,9 +85,6 @@ public class UserController {
 
     @DeleteMapping("/all")
     public ResponseEntity<Void> deleteAllVotazioniByUser() {
-//        UserDetails userDetails = getCurrentUser();
-//        User currentUser = convertToCustomUser(userDetails);
-//        UUID uuidUser = currentUser.getUuidUser();
         userService.deleteAllVotazioniByUser();
         return ResponseEntity.noContent().build();
     }
@@ -96,7 +92,6 @@ public class UserController {
     public ResponseEntity<Void> deleteVotazioniByUserAndUuidVotazione(@PathVariable UUID uuidVotazione) {
         UserDetails userDetails = getCurrentUser();
         User user = userService.getUserFromUserDetails(userDetails);
-//        UUID uuidUser = user.getUuidUser();
         userService.deleteVotazioniByUserAndUuidVotazione(user, uuidVotazione);
         return ResponseEntity.noContent().build();
     }

@@ -8,7 +8,6 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.LocalDate;
 import java.util.*;
 
@@ -81,26 +80,6 @@ public class User implements UserDetails {
         this.accesso = false;
     }
 
-
-
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return Collections.singleton(new SimpleGrantedAuthority("ROLE_admin"));
-//    }
-
-//    @Override
-//    @JsonIgnore
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        Set<GrantedAuthority> authorities = new HashSet<>();
-//
-//        if (this.roleName.equals("admin")) {
-//            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-//        } else {
-//            throw new IllegalArgumentException("Ruolo sconosciuto: " + this.roleName);
-//        }
-//        return authorities;
-//    }
-
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -132,9 +111,7 @@ public class User implements UserDetails {
             throw new IllegalArgumentException("Ruolo sconosciuto: " + this.roleName);
         }
         return authorities;
-//        return null;
     }
-
 
     public User(@NotEmpty String username, @NotEmpty @NotNull String password, @NotEmpty String roleName) {
         super();
@@ -142,35 +119,4 @@ public class User implements UserDetails {
         this.password = password;
         this.roleName = roleName;
     }
-
-//
-//    @Override
-//    public String getPassword() {
-//        return "";
-//    }
-//
-//    @Override
-//    public String getUsername() {
-//        return "";
-//    }
-//
-//    @Override
-//    public boolean isAccountNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonLocked() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isCredentialsNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isEnabled() {
-//        return true;
-//    }
 }

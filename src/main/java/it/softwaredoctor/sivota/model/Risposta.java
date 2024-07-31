@@ -3,7 +3,6 @@ package it.softwaredoctor.sivota.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ public class Risposta {
     @JoinColumn(name = "domanda_id")
     private Domanda domanda;
 
-//    @Builder.Default
     private LocalDate dataRisposta = LocalDate.now();
 
     private Boolean isSelected;

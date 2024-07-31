@@ -22,7 +22,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -87,7 +86,6 @@ public class UserService {
 
     public boolean createUser(UserDTO userDTO) throws MessagingException {
         if (userRepository.existsByUsernameOrEmail(userDTO.getUsername(), userDTO.getEmail())) {
-//            throw new IllegalArgumentException("Username or Email already exists");
             return false;
         }
         User user = userMapper.userDTOToUser(userDTO);
@@ -100,45 +98,28 @@ public class UserService {
         userRepository.save(user);
 
         String confirmationUrl = "http://localhost:8080/api/v1/user/verify-email?token=" + token + "&email=" + user.getEmail();
-        // Pubblica l'evento OnRegistrationCompleteEvent
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, confirmationUrl));
-//        emailService.sendEmailConfirm(user.getEmail(), confirmationUrl);
         return true;
     }
 
     @Transactional
     public void deleteVotazioniByUserAndUuidVotazione  (User user,UUID uuidVotazione) {
-//        User user = userRepository.findByUuidUser(uuidUser)
-//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         UserDetails userDetails = getCurrentUser();
         user = getUserFromUserDetails(userDetails);
-//        UUID uuidUser = user.getUuidUser();
-
         votazioneRepository.deleteByUserAndUuidVotazione(user, uuidVotazione);
     }
 
-
-
-
-
-
-    //    @PreAuthorize("isAuthenticated()")
     @Transactional
     public void deleteAllVotazioniByUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserDetails userDetails = getCurrentUser();
         User user = getUserFromUserDetails(userDetails);
-//        User user = userRepository.findByUuidUser(uuidUser)
-//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         List<Votazione> votazioni = user.getVotazione();
-
         votazioni.forEach(votazioneRepository::delete);
         votazioni.clear();
         userRepository.save(user);
     }
 
-
-//    @PreAuthorize("isAuthenticated()")
     public List<VotazioneDTO> findAllByUuidUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserDetails userDetails = getCurrentUser();
@@ -149,12 +130,7 @@ public class UserService {
     }
 
     public VotazioneDTO findVotazioneByUuidUserUuidVotazione(UUID uuidUser, UUID uuidVotazione) {
-//        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-//        UserDetails userDetails = getCurrentUser();
         User user = getUserFromUserDetails2();
-//        UUID userUuid =  getCurrentUserUuid();
-//        User user = userRepository.findByUuidUser(uuidUser)
-//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         Votazione votazione = user.getVotazione().stream()
                 .filter(v -> v.getUuidVotazione().equals(uuidVotazione))
                 .findAny()
@@ -166,8 +142,6 @@ public class UserService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserDetails userDetails = getCurrentUser();
         User user = getUserFromUserDetails(userDetails);
-//        User user = userRepository.findByUuidUser(uuidUser)
-//                .orElseThrow(() -> new EntityNotFoundException("User with UUID " + uuidUser + " not found"));
         return user.getVotazione().stream()
                 .filter(v -> v.getUuidVotazione().equals(uuidVotazione))
                 .findAny()
@@ -175,7 +149,6 @@ public class UserService {
     }
 
     public void resetPassword(String email, String newPassword) {
-
         User user = userRepository.findByEmail(email);
         if (user != null) {
             user.setPassword(newPassword);
@@ -185,7 +158,6 @@ public class UserService {
         }
     }
 
-    //nel momento in cui l utente clicca il link arrivato per email parte questa chiamata
     public String validateVerificationToken(String token) {
         log.info("Validating token: {}", token);
         User user = userRepository.findByVerificationToken(token).orElse(null);
@@ -199,8 +171,8 @@ public class UserService {
             return "expired";
         }
         user.setEnabled(true);
-        user.setVerificationToken(null); // Eliminazione token dopo la verifica
-        user.setTokenCreationDate(null); // Rimozione data di creazione del token
+        user.setVerificationToken(null);
+        user.setTokenCreationDate(null);
         userRepository.save(user);
         log.info("Token validated and user enabled: {}", user.getUsername());
         return "valid";
@@ -242,5 +214,4 @@ public class UserService {
         }
         return user;
     }
-
 }

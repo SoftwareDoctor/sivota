@@ -10,7 +10,6 @@ import it.softwaredoctor.sivota.repository.RispostaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,5 +35,4 @@ public class DomandaService {
         domandaRepository.save(domanda);
         return domanda;
     }
-
 }

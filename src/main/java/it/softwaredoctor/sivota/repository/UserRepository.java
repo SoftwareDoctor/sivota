@@ -13,27 +13,11 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByUuidUser(UUID uuidUser);
-
-//    List <Votazione> findAllByUuidUser(UUID uuidUser);
-
-    List <VotazioneDTO> findAllByUuidUser(UUID uuidUser);
-
-//    Optional <User> findByUsername(String username);
-
-    boolean existsByUsernameAndPassword(String username, String password);
-
     User findByUsername(String username);
-
-    boolean existsByUsername(String username);
 
     User findByEmail(String email);
 
     Optional<User> findByVerificationToken(String token);
 
-    boolean existsByEmail(String email);
-
     boolean existsByUsernameOrEmail(String email, String username);
-
-
 }
