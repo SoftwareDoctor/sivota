@@ -1,7 +1,4 @@
-
 # VotazioniApp
-
-**Autore:** Andrea Italiano
 
 ## Descrizione
 
@@ -22,6 +19,8 @@ SiVota è un'applicazione web sviluppata per gestire il processo di creazione, g
 - **Spring Security**
 - **Spring Data JPA**
 - **MapStruct**
+- **Swagger**
+- **OpenAPI Generator**
 
 ## Setup e Avvio
 
@@ -47,7 +46,7 @@ SiVota è un'applicazione web sviluppata per gestire il processo di creazione, g
 
 3. **Configura il database:**
 
-   Assicurati di avere Docker installato e avvia un'istanza di PostgreSQL (docker desktop)
+   Assicurati di avere Docker installato e avvia un'istanza di PostgreSQL (docker desktop). Nel file application.yml vi è la configurazione relativa al DB. 
 
 4. **Compila e avvia l'applicazione:**
 
@@ -55,4 +54,6 @@ SiVota è un'applicazione web sviluppata per gestire il processo di creazione, g
     mvn spring-boot:run
     ```
 ---
+
+**Autore:** Andrea Italiano
 
