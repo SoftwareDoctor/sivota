@@ -32,17 +32,12 @@ public class Risposta {
     @JoinColumn(name = "domanda_id")
     private Domanda domanda;
 
-    private LocalDate dataRisposta = LocalDate.now();
-
     private Boolean isSelected;
 
     private Integer risultatoNumerico;
 
-    @ElementCollection
-    @CollectionTable(name = "risposta_votanti_email", joinColumns = @JoinColumn(name = "risposta_id"))
-    @Column(name = "email")
-    private List<String> votantiEmail = new ArrayList<>();
-
+    @OneToMany(mappedBy = "risposta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RispostaVotante> votanti = new ArrayList<>();
 
     @PrePersist
     @PreUpdate
@@ -53,15 +48,8 @@ public class Risposta {
         if (this.isSelected == null) {
             this.isSelected = false;
         }
-        if(this.risultatoNumerico == null) {
+        if (this.risultatoNumerico == null) {
             this.risultatoNumerico = 0;
         }
-        if(this.dataRisposta == null && !this.getIsSelected()) {
-            this.dataRisposta = LocalDate.now();
-        } else {
-            this.dataRisposta = null;
-        }
     }
-
 }
-

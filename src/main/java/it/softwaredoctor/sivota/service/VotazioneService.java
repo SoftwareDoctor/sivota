@@ -4,11 +4,9 @@ import it.softwaredoctor.sivota.dto.DomandaDTO;
 import it.softwaredoctor.sivota.dto.RispostaDTOAggiornamento;
 import it.softwaredoctor.sivota.dto.VotazioneDTO;
 import it.softwaredoctor.sivota.mapper.VotazioneMapper;
-import it.softwaredoctor.sivota.model.Domanda;
-import it.softwaredoctor.sivota.model.Risposta;
-import it.softwaredoctor.sivota.model.User;
-import it.softwaredoctor.sivota.model.Votazione;
+import it.softwaredoctor.sivota.model.*;
 import it.softwaredoctor.sivota.repository.RispostaRepository;
+import it.softwaredoctor.sivota.repository.RispostaVotanteRepository;
 import it.softwaredoctor.sivota.repository.UserRepository;
 import it.softwaredoctor.sivota.repository.VotazioneRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,7 +36,7 @@ public class VotazioneService {
     private final EmailService emailService;
     private final CustomUserDetailsService customUserDetailsService;
     private final TokenService tokenService;
-
+    private final RispostaVotanteRepository rispostaVotanteRepository;
 
     @Transactional
     public UUID createVotazione(VotazioneDTO votazioneDTO, UserDetails currentUser) {
@@ -107,34 +105,28 @@ public class VotazioneService {
             throw new RuntimeException("Votazione con UUID " + uuidVotazione + " non trovata.");
         }
         Votazione votazione = votazioneOpt.get();
+        String email = tokenService.getEmailFromToken(token);
         for (RispostaDTOAggiornamento dto : aggiornamenti) {
             Optional<Risposta> rispostaOpt = Optional.ofNullable(rispostaRepository.findByUuidRisposta(dto.getUuidRisposta()));
             if (rispostaOpt.isPresent()) {
                 Risposta risposta = rispostaOpt.get();
                 risposta.setIsSelected(dto.getIsSelected());
-
-                if (dto.getIsSelected() != null && dto.getIsSelected()) {
-                    risposta.setDataRisposta(LocalDate.now());
-                } else {
-                    risposta.setDataRisposta(null);
-                }
-
                 if (!votazione.getIsAnonymous() && Boolean.TRUE.equals(risposta.getIsSelected())) {
-                    String email = tokenService.getEmailFromToken(token);
-                    List<String> votantiEmail = risposta.getVotantiEmail();
-
-                    if (votantiEmail == null) {
-                        votantiEmail = new ArrayList<>();
+                    List<RispostaVotante> votanti = risposta.getVotanti();
+                    if (votanti == null) {
+                        votanti = new ArrayList<>();
+                        risposta.setVotanti(votanti);
                     }
-
-                    if (!votantiEmail.contains(email)) {
-                        votantiEmail.add(email);
-                    }
-                    risposta.setVotantiEmail(votantiEmail);
+                    RispostaVotante nuovoVotante = new RispostaVotante();
+                    nuovoVotante.setRisposta(risposta);
+                    nuovoVotante.setEmail(email);
+                    votanti.add(nuovoVotante);
+                    rispostaVotanteRepository.save(nuovoVotante);
                 }
                 rispostaRepository.save(risposta);
             }
         }
     }
+
 }
 
