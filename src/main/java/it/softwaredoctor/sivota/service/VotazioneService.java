@@ -1,7 +1,9 @@
 package it.softwaredoctor.sivota.service;
 
-import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.eventbridge.AmazonEventBridge;
+import com.amazonaws.services.eventbridge.AmazonEventBridgeClientBuilder;
+import com.amazonaws.services.eventbridge.model.PutEventsRequest;
+import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.softwaredoctor.sivota.dto.DomandaDTO;
@@ -25,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -39,8 +40,12 @@ public class VotazioneService {
     private final EmailService emailService;
     private final TokenService tokenService;
     private final RispostaVotanteRepository rispostaVotanteRepository;
-    private final AmazonSNS snsClient;
 
+    private final AmazonEventBridge eventBridge = AmazonEventBridgeClientBuilder.defaultClient();
+
+    public List<Votazione> getAllVotazioni() {
+        return votazioneRepository.findAll();
+    }
 
     public List<String> getEmailAddresses(UUID uuidVotazione) {
         Votazione votazione = votazioneRepository.findByUuidVotazione(uuidVotazione)
@@ -70,11 +75,17 @@ public class VotazioneService {
         votazione.setDomande(domande);
         votazioneRepository.save(votazione);
         getEmailAddresses(votazione.getUuidVotazione());
-        String message = new ObjectMapper().writeValueAsString(votazione);
-        snsClient.publish(new PublishRequest()
-                .withTopicArn("arn:aws:sns:region:account-id:topic-name")
-                .withMessage(message));
 
+        // Pubblica evento su EventBridge
+        String message = new ObjectMapper().writeValueAsString(votazione);
+        PutEventsRequestEntry entry = new PutEventsRequestEntry()
+                .withSource("my.application.votazione")
+                .withDetail(message)
+                .withDetailType("VotazioneCreated")
+                .withResources("arn:aws:events:region:account-id:event-bus/default");
+
+        PutEventsRequest request = new PutEventsRequest().withEntries(entry);
+        eventBridge.putEvents(request);
 
         emailService.sendEmail(votazioneDTO.getVotantiEmail(), votazione.getUuidVotazione());
         return votazione.getUuidVotazione();
@@ -116,13 +127,11 @@ public class VotazioneService {
         return votazioneMapper.votazioneToVotazioneDto(votazione);
     }
 
-
     public List<String> getVotantiEmailByVotazioneId(UUID votazioneId) {
         Votazione votazione = votazioneRepository.findByUuidVotazione(votazioneId)
                 .orElseThrow(() -> new EntityNotFoundException("Votazione con ID " + votazioneId + " non trovata"));
         return votazione.getVotantiEmail();
     }
-
 
     public void updateAllRisposte(UUID uuidVotazione, List<RispostaDTOAggiornamento> aggiornamenti, String token) {
         Optional<Votazione> votazioneOpt = votazioneRepository.findByUuidVotazione(uuidVotazione);
@@ -155,6 +164,4 @@ public class VotazioneService {
             }
         }
     }
-
 }
-

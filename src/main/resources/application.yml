@@ -26,6 +26,9 @@ spring:
           starttls:
             enable: true
             required: true
+  lambda:
+    function:
+      handler: it.softwaredoctor.sivota.lambda.VotazioneNotificationHandler
 server:
   port: 8080
   servlet:
