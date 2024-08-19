@@ -4,13 +4,19 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import it.softwaredoctor.sivota.model.Votazione;
 import it.softwaredoctor.sivota.service.VotazioneService;
+import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDate;
 import java.util.List;
 
 
+@Component
 @RequiredArgsConstructor
 public class VotazioneNotificationHandler implements RequestHandler<Object, String> {
+
 
     private final VotazioneService votazioneService;
     private final EmailSender emailSender;
