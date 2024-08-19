@@ -1,5 +1,9 @@
 package it.softwaredoctor.sivota.service;
 
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.softwaredoctor.sivota.dto.DomandaDTO;
 import it.softwaredoctor.sivota.dto.RispostaDTOAggiornamento;
 import it.softwaredoctor.sivota.dto.VotazioneDTO;
@@ -17,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,19 +34,32 @@ public class VotazioneService {
     private final VotazioneRepository votazioneRepository;
     private final VotazioneMapper votazioneMapper;
     private final DomandaService domandaService;
-    private final UserRepository userRepository;
     private final RispostaRepository rispostaRepository;
     private final UserService userService;
-    private final RispostaService rispostaService;
     private final EmailService emailService;
-    private final CustomUserDetailsService customUserDetailsService;
     private final TokenService tokenService;
     private final RispostaVotanteRepository rispostaVotanteRepository;
+    private final AmazonSNS snsClient;
+
+
+    public List<String> getEmailAddresses(UUID uuidVotazione) {
+        Votazione votazione = votazioneRepository.findByUuidVotazione(uuidVotazione)
+                .orElseThrow(() -> new NoSuchElementException("Votazione non trovata per l'UUID: " + uuidVotazione));
+        return votazione.getVotantiEmail().stream()
+                .map(String::trim)
+                .filter(email -> !email.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
+    }
 
     @Transactional
-    public UUID createVotazione(VotazioneDTO votazioneDTO, UserDetails currentUser) {
+    public UUID createVotazione(VotazioneDTO votazioneDTO, UserDetails currentUser) throws JsonProcessingException {
         User user = userService.getUserFromUserDetails(currentUser);
         Votazione votazione = votazioneMapper.votazioneDTOToVotazione(votazioneDTO);
+
+        LocalDateTime oraAttuale = LocalDateTime.now();
+        LocalDateTime scadenza = oraAttuale.plusMinutes(votazioneDTO.getScadenza().getMinute());
+        votazione.setScadenza(scadenza);
         votazione.setUser(user);
         List<Domanda> domande = new ArrayList<>();
         for (DomandaDTO domandaDTO : votazioneDTO.getDomande()) {
@@ -51,6 +69,13 @@ public class VotazioneService {
         }
         votazione.setDomande(domande);
         votazioneRepository.save(votazione);
+        getEmailAddresses(votazione.getUuidVotazione());
+        String message = new ObjectMapper().writeValueAsString(votazione);
+        snsClient.publish(new PublishRequest()
+                .withTopicArn("arn:aws:sns:region:account-id:topic-name")
+                .withMessage(message));
+
+
         emailService.sendEmail(votazioneDTO.getVotantiEmail(), votazione.getUuidVotazione());
         return votazione.getUuidVotazione();
     }
@@ -105,6 +130,9 @@ public class VotazioneService {
             throw new RuntimeException("Votazione con UUID " + uuidVotazione + " non trovata.");
         }
         Votazione votazione = votazioneOpt.get();
+        if (LocalDateTime.now().isAfter(votazione.getScadenza())) {
+            throw new RuntimeException("La votazione è scaduta.");
+        }
         String email = tokenService.getEmailFromToken(token);
         for (RispostaDTOAggiornamento dto : aggiornamenti) {
             Optional<Risposta> rispostaOpt = Optional.ofNullable(rispostaRepository.findByUuidRisposta(dto.getUuidRisposta()));

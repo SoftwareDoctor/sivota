@@ -20,7 +20,6 @@ public class DomandaService {
     private final DomandaRepository domandaRepository;
     private final RispostaService rispostaService;
     private final DomandaMapper domandaMapper;
-    private final RispostaRepository rispostaRepository;
 
     @Transactional
     public Domanda createDomanda(DomandaDTO domandaDTO) {

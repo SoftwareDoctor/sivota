@@ -2,7 +2,7 @@
  * @Author: SoftwareDoctor andrea_italiano87@yahoo.com
  * @Date: 2024-07-31 07:40:12
  * @LastEditors: SoftwareDoctor andrea_italiano87@yahoo.com
- * @LastEditTime: 2024-07-31 14:05:28
+ * @LastEditTime: 2024-08-02 08:59:52
  * @FilePath: src/main/java/it/softwaredoctor/sivota/service/TokenService.java
  * @Description: 这是默认设置, 可以在设置》工具》File Description中进行配置
  */
@@ -18,7 +18,7 @@ import java.util.UUID;
 @Service
 public class TokenService {
 
-    private final SecureRandom secureRandom = new SecureRandom(); 
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public String generateToken(String email, UUID uuidVotazione) {
         String uniqueToken = UUID.randomUUID().toString();

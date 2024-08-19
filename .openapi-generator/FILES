@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 README.md
 pom.xml
 src/generated/java/it/softwaredoctor/sivota/api/ApiUtil.java

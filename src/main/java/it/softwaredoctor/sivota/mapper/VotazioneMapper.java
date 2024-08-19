@@ -19,7 +19,8 @@ public interface VotazioneMapper {
             @Mapping(target = "domande", source = "domande"),
             @Mapping(target = "votantiEmail", source = "votantiEmail"),
             @Mapping(target = "dataCreazione", source = "dataCreazione"),
-            @Mapping(target = "isAnonymous", source = "isAnonymous")
+            @Mapping(target = "isAnonymous", source = "isAnonymous"),
+            @Mapping(target = "scadenza", source = "scadenza")
     })
     Votazione votazioneDTOToVotazione(VotazioneDTO votazioneDTO);
 
@@ -31,7 +32,8 @@ public interface VotazioneMapper {
             @Mapping(target = "user", ignore = true),
             @Mapping(target = "votantiEmail", source = "votantiEmail"),
             @Mapping(target = "dataCreazione", source = "dataCreazione"),
-            @Mapping(target = "isAnonymous", source = "isAnonymous")
+            @Mapping(target = "isAnonymous", source = "isAnonymous"),
+            @Mapping(target = "scadenza", source = "scadenza")
     })
     VotazioneDTO votazioneToVotazioneDto(Votazione votazione);
 

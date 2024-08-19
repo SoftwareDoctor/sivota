@@ -14,11 +14,10 @@ public interface RispostaMapper {
     @Mappings({
             @Mapping(target = "uuidRisposta", source = "uuidRisposta"),
             @Mapping(target = "testo", source = "testo"),
-            @Mapping(target = "domanda", ignore = true),
-            @Mapping(target = "dataRisposta", source = "dataRisposta"),
+            @Mapping(target = "domanda", source = "domanda"),
             @Mapping(target = "isSelected", source = "isSelected"),
             @Mapping(target = "risultatoNumerico", source = "risultatoNumerico"),
-            @Mapping(target = "votantiEmail", ignore = true)
+            @Mapping(target = "votanti", source = "votanti")
     })
     RispostaDTO rispostaToRispostaDTO(Risposta risposta);
 
@@ -26,11 +25,10 @@ public interface RispostaMapper {
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "uuidRisposta", source = "uuidRisposta"),
             @Mapping(target = "testo", source = "testo"),
-            @Mapping(target = "domanda", ignore = true),
-            @Mapping(target = "dataRisposta", source = "dataRisposta"),
+            @Mapping(target = "domanda", source = "domanda"),
             @Mapping(target = "isSelected", source = "isSelected"),
             @Mapping(target = "risultatoNumerico", source = "risultatoNumerico"),
-            @Mapping(target = "votantiEmail", ignore = true)
+            @Mapping(target = "votanti", source = "votanti")
     })
     Risposta rispostaDTOToRisposta(RispostaDTO rispostaDTO);
 

@@ -2,7 +2,7 @@
  * @Author: SoftwareDoctor andrea_italiano87@yahoo.com
  * @Date: 2024-08-02 07:08:55
  * @LastEditors: SoftwareDoctor andrea_italiano87@yahoo.com
- * @LastEditTime: 2024-08-02 07:11:25
+ * @LastEditTime: 2024-08-02 08:58:53
  * @FilePath: src/main/java/it/softwaredoctor/sivota/repository/RispostaVotanteRepository.java
  * @Description: 这是默认设置, 可以在设置》工具》File Description中进行配置
  */

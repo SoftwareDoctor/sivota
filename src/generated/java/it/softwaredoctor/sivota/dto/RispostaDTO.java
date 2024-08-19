@@ -1,31 +1,20 @@
 package it.softwaredoctor.sivota.dto;
 
-import java.net.URI;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import it.softwaredoctor.sivota.dto.DomandaDTO;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import org.openapitools.jackson.nullable.JsonNullable;
-import java.time.OffsetDateTime;
+import it.softwaredoctor.sivota.model.RispostaVotante;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-
-import java.util.*;
-import jakarta.annotation.Generated;
 
 /**
  * RispostaDTO
  */
-
 @JsonTypeName("Risposta")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-07-04T11:21:14.922078800+02:00[Europe/Rome]")
 public class RispostaDTO {
 
   private UUID uuidRisposta;
@@ -41,8 +30,7 @@ public class RispostaDTO {
   private Integer risultatoNumerico;
 
   @Valid
-  private List<String> votantiEmail;
-
+  private List<RispostaVotante> votanti;
 
   public RispostaDTO() {
     super();
@@ -65,8 +53,7 @@ public class RispostaDTO {
   /**
    * Get uuidRisposta
    * @return uuidRisposta
-  */
-  @NotNull @Valid
+   */
   @Schema(name = "uuidRisposta", example = "6e3a4567-912a-4b1f-8d5b-5fb317d1f5ac", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("uuidRisposta")
   public UUID getUuidRisposta() {
@@ -85,8 +72,7 @@ public class RispostaDTO {
   /**
    * Get testo
    * @return testo
-  */
-  @NotNull
+   */
   @Schema(name = "testo", example = "ok", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("testo")
   public String getTesto() {
@@ -105,8 +91,7 @@ public class RispostaDTO {
   /**
    * Get domanda
    * @return domanda
-  */
-  @NotNull @Valid
+   */
   @Schema(name = "domanda", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("domanda")
   public DomandaDTO getDomanda() {
@@ -125,8 +110,7 @@ public class RispostaDTO {
   /**
    * Get dataRisposta
    * @return dataRisposta
-  */
-
+   */
   @Schema(name = "dataRisposta", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("dataRisposta")
   public String getDataRisposta() {
@@ -145,8 +129,7 @@ public class RispostaDTO {
   /**
    * Get isSelected
    * @return isSelected
-  */
-
+   */
   @Schema(name = "isSelected", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("isSelected")
   public Boolean getIsSelected() {
@@ -165,8 +148,7 @@ public class RispostaDTO {
   /**
    * Get risultatoNumerico
    * @return risultatoNumerico
-  */
-
+   */
   @Schema(name = "risultatoNumerico", example = "0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("risultatoNumerico")
   public Integer getRisultatoNumerico() {
@@ -177,32 +159,31 @@ public class RispostaDTO {
     this.risultatoNumerico = risultatoNumerico;
   }
 
-  public RispostaDTO votantiEmail(List<String> votantiEmail) {
-    this.votantiEmail = votantiEmail;
+  public RispostaDTO votanti(List<RispostaVotante> votanti) {
+    this.votanti = votanti;
     return this;
   }
 
-  public RispostaDTO addVotantiEmailItem(String votantiEmailItem) {
-    if (this.votantiEmail == null) {
-      this.votantiEmail = new ArrayList<>();
+  public RispostaDTO addVotantiItem(RispostaVotante votantiItem) {
+    if (this.votanti == null) {
+      this.votanti = new ArrayList<>();
     }
-    this.votantiEmail.add(votantiEmailItem);
+    this.votanti.add(votantiItem);
     return this;
   }
 
   /**
-   * Get votantiEmail
-   * @return votantiEmail
-  */
-
-  @Schema(name = "votantiEmail", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("votantiEmail")
-  public List<String> getVotantiEmail() {
-    return votantiEmail;
+   * Get votanti
+   * @return votanti
+   */
+  @Schema(name = "votanti", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("votanti")
+  public List<RispostaVotante> getVotanti() {
+    return votanti;
   }
 
-  public void setVotantiEmail(List<String> votantiEmail) {
-    this.votantiEmail = votantiEmail;
+  public void setVotanti(List<RispostaVotante> votanti) {
+    this.votanti = votanti;
   }
 
   @Override
@@ -215,17 +196,17 @@ public class RispostaDTO {
     }
     RispostaDTO risposta = (RispostaDTO) o;
     return Objects.equals(this.uuidRisposta, risposta.uuidRisposta) &&
-        Objects.equals(this.testo, risposta.testo) &&
-        Objects.equals(this.domanda, risposta.domanda) &&
-        Objects.equals(this.dataRisposta, risposta.dataRisposta) &&
-        Objects.equals(this.isSelected, risposta.isSelected) &&
-        Objects.equals(this.risultatoNumerico, risposta.risultatoNumerico) &&
-        Objects.equals(this.votantiEmail, risposta.votantiEmail);
+            Objects.equals(this.testo, risposta.testo) &&
+            Objects.equals(this.domanda, risposta.domanda) &&
+            Objects.equals(this.dataRisposta, risposta.dataRisposta) &&
+            Objects.equals(this.isSelected, risposta.isSelected) &&
+            Objects.equals(this.risultatoNumerico, risposta.risultatoNumerico) &&
+            Objects.equals(this.votanti, risposta.votanti);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(uuidRisposta, testo, domanda, dataRisposta, isSelected, risultatoNumerico, votantiEmail);
+    return Objects.hash(uuidRisposta, testo, domanda, dataRisposta, isSelected, risultatoNumerico, votanti);
   }
 
   @Override
@@ -238,7 +219,7 @@ public class RispostaDTO {
     sb.append("    dataRisposta: ").append(toIndentedString(dataRisposta)).append("\n");
     sb.append("    isSelected: ").append(toIndentedString(isSelected)).append("\n");
     sb.append("    risultatoNumerico: ").append(toIndentedString(risultatoNumerico)).append("\n");
-    sb.append("    votantiEmail: ").append(toIndentedString(votantiEmail)).append("\n");
+    sb.append("    votanti: ").append(toIndentedString(votanti)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -254,4 +235,3 @@ public class RispostaDTO {
     return o.toString().replace("\n", "\n    ");
   }
 }
-

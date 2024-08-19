@@ -1,5 +1,6 @@
 package it.softwaredoctor.sivota.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.softwaredoctor.sivota.api.VotazioneApi;
 import it.softwaredoctor.sivota.dto.RispostaDTOAggiornamento;
 import it.softwaredoctor.sivota.model.User;
@@ -30,8 +31,6 @@ public class VotazioneController implements VotazioneApi {
     private final EmailService emailService;
     private final UserService userService;
     private final CustomUserDetailsService customUserDetailsService;
-    private final TokenService tokenService;
-
 
     @PatchMapping("/conteggio")
     public ResponseEntity<VotazioneDTO> updateConteggio(@RequestParam("uuid") UUID uuidVotazione) {
@@ -83,6 +82,8 @@ public class VotazioneController implements VotazioneApi {
         } catch (EntityNotFoundException e) {
             log.error("Utente non trovato", e);
             return ResponseEntity.badRequest().build();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 

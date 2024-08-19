@@ -41,7 +41,6 @@ public class UserService {
     private final VotazioneMapper votazioneMapper;
     private final BCryptPasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
-    private final EmailService emailService;
     private final ApplicationEventPublisher eventPublisher;
 
 
