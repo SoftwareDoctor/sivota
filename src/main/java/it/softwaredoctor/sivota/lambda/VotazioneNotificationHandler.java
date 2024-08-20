@@ -2,43 +2,41 @@ package it.softwaredoctor.sivota.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.softwaredoctor.sivota.model.Votazione;
 import it.softwaredoctor.sivota.service.VotazioneService;
-import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 
 @Component
 @RequiredArgsConstructor
-public class VotazioneNotificationHandler implements RequestHandler<Object, String> {
-
+public class VotazioneNotificationHandler implements RequestHandler<String, String> {
 
     private final VotazioneService votazioneService;
     private final EmailSender emailSender;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String handleRequest(Object input, Context context) {
+    public String handleRequest(String input, Context context) {
         try {
-            // Ottieni tutte le votazioni
-            List<Votazione> votazioni = votazioneService.getAllVotazioni();
+            // Deserializza l'input JSON in un oggetto Votazione
+            Votazione votazione = objectMapper.readValue(input, Votazione.class);
 
-            // Per ogni votazione, verifica se è scaduta
-            for (Votazione votazione : votazioni) {
-                if (isVotazioneExpired(votazione.getDataCreazione())) {
-                    List<String> emailAddresses = votazioneService.getEmailAddresses(votazione.getUuidVotazione());
-                    String emailMessage = buildEmailMessage(votazione);
-                    emailSender.sendEmails(emailAddresses, "Votazione Scaduta", emailMessage);
-                }
+            // Verifica se la votazione è scaduta
+            if (isVotazioneExpired(votazione.getDataCreazione())) {
+                List<String> emailAddresses = votazioneService.getEmailAddresses(votazione.getUuidVotazione());
+                String emailMessage = buildEmailMessage(votazione);
+                emailSender.sendEmails(emailAddresses, "Votazione Scaduta", emailMessage);
             }
 
         } catch (Exception e) {
             context.getLogger().log("Failed to process: " + e.getMessage());
             context.getLogger().log("Stack trace: " + getStackTraceAsString(e));
+            return "Processing Failed";
         }
         return "Processed Successfully";
     }
@@ -49,9 +47,9 @@ public class VotazioneNotificationHandler implements RequestHandler<Object, Stri
         return dataCreazione.isBefore(tenDaysAgo);
     }
 
-    private String buildEmailMessage(Votazione votingEvent) {
+    private String buildEmailMessage(Votazione votazione) {
         return String.format("Caro %s,\n\nLa votazione per '%s' è scaduta. Se non hai ancora risposto non potrai più partecipare, altrimenti ignora questa email.\n\nCordiali saluti,\nIl Team",
-                votingEvent.getUser().getName(), votingEvent.getTitolo());
+                votazione.getUser().getName(), votazione.getTitolo());
     }
 
     private String getStackTraceAsString(Exception e) {

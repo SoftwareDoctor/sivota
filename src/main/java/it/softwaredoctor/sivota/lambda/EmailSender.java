@@ -4,8 +4,11 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
+@Component
 public class EmailSender {
 
     private final AmazonSimpleEmailService sesClient = AmazonSimpleEmailServiceClientBuilder.defaultClient();
@@ -20,7 +23,7 @@ public class EmailSender {
                                             .withCharset("UTF-8").withData(body)))
                             .withSubject(new com.amazonaws.services.simpleemail.model.Content()
                                     .withCharset("UTF-8").withData(subject)))
-                    .withSource("your-email@example.com");
+                    .withSource("andrea_italiano87@yahoo.com");
             SendEmailResult result = sesClient.sendEmail(request);
             System.out.println("Email sent to " + email + " with message ID: " + result.getMessageId());
         }
